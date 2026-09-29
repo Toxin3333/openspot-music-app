@@ -15,6 +15,7 @@ jobs:
       CI: "true"
       NODE_ENV: "production"
       APP_NAME: "OpenSpot"
+
       EXPO_PUBLIC_API_BASE_URL: "https://www.jiosaavn.com/api.php"
       EXPO_PUBLIC_YT_API_INSTANCES: ""
 
@@ -61,7 +62,14 @@ jobs:
             ],
             "permissions": [
               "core:default",
-              "http:default",
+              {
+                "identifier": "http:default",
+                "allow": [
+                  {
+                    "url": "https://www.jiosaavn.com/**"
+                  }
+                ]
+              },
               "shell:allow-open"
             ]
           }
@@ -69,13 +77,11 @@ jobs:
 
       - name: Verify configuration
         run: |
-          echo "EXPO_PUBLIC_API_BASE_URL=$EXPO_PUBLIC_API_BASE_URL"
-          echo "EXPO_PUBLIC_YT_API_INSTANCES=$EXPO_PUBLIC_YT_API_INSTANCES"
-          echo ""
-          echo "--- .env ---"
+          echo "===== .env ====="
           cat .env
+
           echo ""
-          echo "--- capabilities/default.json ---"
+          echo "===== Tauri capabilities ====="
           cat src-tauri/capabilities/default.json
 
       - name: Build Tauri app (Intel)
