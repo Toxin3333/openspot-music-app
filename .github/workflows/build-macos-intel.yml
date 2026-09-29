@@ -16,11 +16,7 @@ jobs:
       NODE_ENV: "production"
       APP_NAME: "OpenSpot"
 
-      # OpenSpot uses JioSaavn as its music API.
       EXPO_PUBLIC_API_BASE_URL: "https://www.jiosaavn.com/api.php"
-
-      # The app can obtain YouTube Music API instances from
-      # the public openspot-config repository at runtime.
       EXPO_PUBLIC_YT_API_INSTANCES: ""
 
     steps:
@@ -72,42 +68,129 @@ jobs:
           }
           EOF
 
-            - name: Verify Expo environment
+      - name: Verify Expo environment
         run: |
+          echo "========================================"
+          echo "EXPO ENVIRONMENT"
+          echo "========================================"
           echo "EXPO_PUBLIC_API_BASE_URL=$EXPO_PUBLIC_API_BASE_URL"
           echo "EXPO_PUBLIC_YT_API_INSTANCES=$EXPO_PUBLIC_YT_API_INSTANCES"
 
-          echo "===== .env ====="
+          echo ""
+          echo "========================================"
+          echo ".env"
+          echo "========================================"
           cat .env
 
+          echo ""
+          echo "========================================"
+          echo "Tauri capability"
+          echo "========================================"
+          cat src-tauri/capabilities/default.json
+
       - name: Export Expo web app
-        run: npx expo export --platform web
+        run: |
+          rm -rf dist
+
+          echo "========================================"
+          echo "EXPO EXPORT"
+          echo "========================================"
+
+          npx expo export --platform web
 
       - name: Verify exported bundle
         run: |
-          echo "===== dist files ====="
-          find dist -type f | head -50
+          echo "========================================"
+          echo "DIST FILES"
+          echo "========================================"
 
-          echo "===== Search JioSaavn URL in bundle ====="
-          grep -R -l "jiosaavn.com" dist | head -20 || true
+          find dist -type f | head -100
 
-          echo "===== Search API URL ====="
-          grep -R -o "https://www.jiosaavn.com[^\"']*" dist | head -20 || true
+          echo ""
+          echo "========================================"
+          echo "SEARCH: jiosaavn.com"
+          echo "========================================"
 
-          echo "===== Search EXPO_PUBLIC_API_BASE_URL ====="
-          grep -R -n "EXPO_PUBLIC_API_BASE_URL" dist | head -20 || true
+          grep -R -n -F "jiosaavn.com" dist | head -30 || true
+
+          echo ""
+          echo "========================================"
+          echo "SEARCH: https://www.jiosaavn.com"
+          echo "========================================"
+
+          grep -R -o 'https://www\.jiosaavn\.com[^"'\'' ]*' dist | head -30 || true
+
+          echo ""
+          echo "========================================"
+          echo "SEARCH: EXPO_PUBLIC_API_BASE_URL"
+          echo "========================================"
+
+          grep -R -n -F "EXPO_PUBLIC_API_BASE_URL" dist | head -30 || true
+
+          echo ""
+          echo "========================================"
+          echo "SEARCH SOURCE: jiosaavn.com"
+          echo "========================================"
+
+          grep -R -n -F "jiosaavn.com" . \
+            --exclude-dir=node_modules \
+            --exclude-dir=dist \
+            --exclude-dir=.git \
+            | head -30 || true
+
+      - name: Check generated web files
+        run: |
+          echo "========================================"
+          echo "DIST SIZE"
+          echo "========================================"
+
+          du -sh dist
+
+          echo ""
+          echo "========================================"
+          echo "JS FILE COUNT"
+          echo "========================================"
+
+          find dist -type f \
+            \( -name "*.js" -o -name "*.html" -o -name "*.json" \) \
+            | wc -l
 
       - name: Build Tauri app (Intel)
-        run: npm run tauri:build -- --target x86_64-apple-darwin
+        run: |
+          echo "========================================"
+          echo "TAURI INTEL BUILD"
+          echo "========================================"
+
+          npm run tauri:build -- --target x86_64-apple-darwin
+
+      - name: Verify Intel binary
+        run: |
+          echo "========================================"
+          echo "BINARY ARCHITECTURE"
+          echo "========================================"
+
+          file src-tauri/target/x86_64-apple-darwin/release/openspot 2>/dev/null || true
+
+          echo ""
+          echo "========================================"
+          echo "APP BINARY ARCHITECTURE"
+          echo "========================================"
+
+          find src-tauri/target/x86_64-apple-darwin/release/bundle/macos \
+            -type f \
+            -path "*/Contents/MacOS/*" \
+            -exec file {} \;
 
       - name: Upload DMG artifact
         uses: actions/upload-artifact@v4
         with:
           name: OpenSpot-DMG-Intel
           path: openspot-desktop/src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/*.dmg
+          if-no-files-found: error
 
       - name: Upload APP artifact
         uses: actions/upload-artifact@v4
         with:
           name: OpenSpot-APP-Intel
           path: openspot-desktop/src-tauri/target/x86_64-apple-darwin/release/bundle/macos/*.app
+          if-no-files-found: error
