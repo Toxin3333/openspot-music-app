@@ -72,6 +72,31 @@ jobs:
           }
           EOF
 
+            - name: Verify Expo environment
+        run: |
+          echo "EXPO_PUBLIC_API_BASE_URL=$EXPO_PUBLIC_API_BASE_URL"
+          echo "EXPO_PUBLIC_YT_API_INSTANCES=$EXPO_PUBLIC_YT_API_INSTANCES"
+
+          echo "===== .env ====="
+          cat .env
+
+      - name: Export Expo web app
+        run: npx expo export --platform web
+
+      - name: Verify exported bundle
+        run: |
+          echo "===== dist files ====="
+          find dist -type f | head -50
+
+          echo "===== Search JioSaavn URL in bundle ====="
+          grep -R -l "jiosaavn.com" dist | head -20 || true
+
+          echo "===== Search API URL ====="
+          grep -R -o "https://www.jiosaavn.com[^\"']*" dist | head -20 || true
+
+          echo "===== Search EXPO_PUBLIC_API_BASE_URL ====="
+          grep -R -n "EXPO_PUBLIC_API_BASE_URL" dist | head -20 || true
+
       - name: Build Tauri app (Intel)
         run: npm run tauri:build -- --target x86_64-apple-darwin
 
