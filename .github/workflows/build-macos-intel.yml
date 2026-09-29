@@ -67,6 +67,78 @@ jobs:
                 "allow": [
                   {
                     "url": "https://www.jiosaavn.com/**"
+                  },
+                  {
+                    "url": "https://raw.githubusercontent.com/**"
+                  },
+                  {
+                    "url": "https://*.invidious.f5.si/**"
+                  },
+                  {
+                    "url": "https://*.projectsegfau.lt/**"
+                  },
+                  {
+                    "url": "https://*.nadeko.net/**"
+                  },
+                  {
+                    "url": "https://*.riverside.rocks/**"
+                  },
+                  {
+                    "url": "https://*.tux.pizza/**"
+                  },
+                  {
+                    "url": "https://*.vern.cc/**"
+                  },
+                  {
+                    "url": "https://*.zzls.xyz/**"
+                  },
+                  {
+                    "url": "https://*.citw.lgbt/**"
+                  },
+                  {
+                    "url": "https://*.fdn.fr/**"
+                  },
+                  {
+                    "url": "https://*.kavin.rocks/**"
+                  },
+                  {
+                    "url": "https://*.lunar.icu/**"
+                  },
+                  {
+                    "url": "https://*.nerdvpn.de/**"
+                  },
+                  {
+                    "url": "https://*.osi.kr/**"
+                  },
+                  {
+                    "url": "https://*.perennialte.ch/**"
+                  },
+                  {
+                    "url": "https://*.private.coffee/**"
+                  },
+                  {
+                    "url": "https://*.privacy.dev/**"
+                  },
+                  {
+                    "url": "https://*.protokolla.fi/**"
+                  },
+                  {
+                    "url": "https://*.sethforprivacy.com/**"
+                  },
+                  {
+                    "url": "https://*.snopyta.org/**"
+                  },
+                  {
+                    "url": "https://*.tiekoetter.com/**"
+                  },
+                  {
+                    "url": "https://*.weblibre.org/**"
+                  },
+                  {
+                    "url": "https://*.yewtu.be/**"
+                  },
+                  {
+                    "url": "https://*.puffyan.us/**"
                   }
                 ]
               },
@@ -77,11 +149,11 @@ jobs:
 
       - name: Verify configuration
         run: |
-          echo "===== .env ====="
+          echo "===== ENV ====="
           cat .env
 
           echo ""
-          echo "===== Tauri capabilities ====="
+          echo "===== CAPABILITIES ====="
           cat src-tauri/capabilities/default.json
 
       - name: Build Tauri app (Intel)
@@ -90,7 +162,10 @@ jobs:
 
       - name: Verify Intel binary
         run: |
-          find src-tauri/target/x86_64-apple-darwin/release/bundle/macos \
+          echo "===== APP BINARY ====="
+
+          find \
+            src-tauri/target/x86_64-apple-darwin/release/bundle/macos \
             -type f \
             -path "*/Contents/MacOS/*" \
             -exec file {} \;
